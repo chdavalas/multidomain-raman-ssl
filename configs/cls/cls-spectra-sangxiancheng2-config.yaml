@@ -1,0 +1,91 @@
+seed_everything: 17
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: null
+  logger: 
+  - class_path: lightning.pytorch.loggers.CSVLogger
+    init_args: 
+      save_dir: 'cls-logs-sangxiancheng'
+      name: ''
+  callbacks:
+  - class_path: lightning.pytorch.callbacks.ModelSummary      
+    init_args: 
+       max_depth: 3
+  # - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+  #   init_args:
+  #     logging_interval: 'epoch'
+  # - class_path: lightning.pytorch.callbacks.ModelCheckpoint      
+  #   init_args: 
+  #     save_last: true
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint      
+    init_args: 
+      mode: 'min'
+      monitor: 'val_loss'
+      filename:  '{epoch:03d}-{val_loss:.4f}-{val_r2:.3f}'
+      save_last: true
+  fast_dev_run: false
+  max_epochs: 100
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 1
+  log_every_n_steps: null
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: 0.5
+  gradient_clip_algorithm: 'norm'
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: null
+model:
+  class_path: raman.cls.spectra_encoder_cls.SpectraEncoderClassifierLit
+  init_args:
+    num_classes: 1332
+    input_channels: 2
+    d_model: 128
+    encoder_depth: 4
+    mlp_dim: 256
+    nhead: 4
+    dim_head: 128
+    hidden_dim: 256
+    pos_embedding_type: 'sin_cos' # choose between 'sin_cos' and 'trainable'
+    lr: 0.0005
+    weight_decay: 0.000001
+    dropout: 0.
+    emb_dropout: 0.
+    cls_token: true
+    classification_head: 'mlp'
+    task: 'multiclass'
+data:
+  class_path: raman.dataloaders.data_sangxiancheng.SangXianchengDataModule
+  init_args:
+    data_dir: "../datasets/SangXiancheng/raw_data/Dataset_2"
+    batch_size: 32
+    num_workers: 2
+    pin_memory: false
+    preprocess: null
+    augment: true
+    val_split: 0.001
+    test_split: 0.30
+ckpt_path: null

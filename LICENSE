@@ -19,3 +19,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+========================================================================
+Third-party software notices
+========================================================================
+
+Portions of this repository are adapted from the projects listed below.
+Their original copyright notices and license terms are retained here.
+The project copyright notice above does not replace these notices.
+Dependencies installed separately retain their own licenses; this list
+covers the third-party code identified as adapted in this repository.
+
+------------------------------------------------------------------------
+vit-pytorch
+Source: https://github.com/lucidrains/vit-pytorch
+License copy: THIRD_PARTY_LICENSES/LICENSE-vit-pytorch.txt
+
+------------------------------------------------------------------------
+DeepRaman
+Source: https://github.com/XiaqiongFan/DeepRaman
+Separate license copy: THIRD_PARTY_LICENSES/LICENSE-DeepRaman.txt

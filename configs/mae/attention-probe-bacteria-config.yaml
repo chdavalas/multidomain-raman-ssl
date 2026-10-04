@@ -1,0 +1,94 @@
+seed_everything: 17
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: null
+  logger: 
+  - class_path: lightning.pytorch.loggers.CSVLogger
+    init_args: 
+      save_dir: 'probe-bacteria-logs'
+      name: ''
+  callbacks:
+  - class_path: lightning.pytorch.callbacks.ModelSummary      
+    init_args: 
+       max_depth: 3
+  # - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+  #   init_args:
+  #     logging_interval: 'epoch'
+  # - class_path: lightning.pytorch.callbacks.ModelCheckpoint      
+  #   init_args: 
+  #     save_last: true
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint      
+    init_args: 
+      mode: 'min'
+      monitor: 'val_loss'
+      filename:  '{epoch:03d}-{val_loss:.4f}-{val_r2:.3f}'
+      save_last: true
+  fast_dev_run: false
+  max_epochs: 10
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 1
+  log_every_n_steps: null
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: 0.5
+  gradient_clip_algorithm: 'norm'
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: null
+model:
+  class_path: raman.mae.attention_probe.MAECrossAttentionProbe
+  init_args:
+    lr: 0.0001
+    weight_decay: 0.00001
+    num_classes: 30
+    pretrained_ckpt: null
+    cls_token: true
+    freeze_enc: true # if true then the encoder will not be trained
+    input_channels: 2
+    d_model: 128
+    encoder_depth: 4
+    decoder_depth: 2
+    mlp_dim: 512
+    nhead: 4
+    dim_head: 128
+    mask_ratio: 0.25
+    pos_embedding_type: 'sin_cos' # choose between 'sin_cos' and 'trainable'
+    mae_lr: 0.00015
+    mae_weight_decay: 0.000001
+    dropout: 0.
+    emb_dropout: 0.
+    task: multiclass
+data:
+  class_path: raman.dataloaders.data_bacteria.BacteriaDataModule
+  init_args:
+    data_dir: "../datasets/Bacteria"
+    batch_size: 64
+    num_workers: 4
+    pin_memory: false
+    preprocess: normalization
+    augment: true
+    sliced: false
+ckpt_path: null

@@ -1,0 +1,229 @@
+seed_everything: 17
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: 16
+  logger: 
+  - class_path: lightning.pytorch.loggers.CSVLogger
+    init_args: 
+      save_dir: 'ssp-deep-raman-logs'
+      name: ''
+  callbacks:
+  - class_path: lightning.pytorch.callbacks.ModelSummary      
+    init_args: 
+       max_depth: 3
+  # - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+  #   init_args:
+  #     logging_interval: 'epoch'
+  # - class_path: lightning.pytorch.callbacks.ModelCheckpoint      
+  #   init_args: 
+  #     save_last: true
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint      
+    init_args: 
+      mode: 'min'
+      monitor: 'val_loss'
+      filename:  '{epoch:03d}-{val_loss:.4f}-{val_r2:.3f}'
+      save_last: true
+  fast_dev_run: false
+  max_epochs: 10
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 1
+  log_every_n_steps: null
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: 0.5
+  gradient_clip_algorithm: 'norm'
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: null
+model:
+  class_path: raman.siamese.ssp.SSPLit
+  init_args:
+      num_classes: 2
+      lr: 0.00015
+      weight_decay: 1.0e-06
+      input_channels: 2
+      siamese_type: 'spectra'
+      dim: 128
+      depth: 4
+      heads: 4
+      mlp_dim: 512
+      dim_head: 128
+      pos_embedding_type: 'sin_cos'
+      dropout: 0.0
+      emb_dropout: 0.0
+      fc1_size: 1024
+      # pretrained_ckpt: null
+      pretrained_ckpt: "encoder-ckpts/mae-base/version_13/checkpoints/last.ckpt"
+      freeze_encoder: false
+data:
+  class_path: raman.dataloaders.data_deep_raman.DeepRamanDataModule
+  init_args:
+    batch_size: 64
+    num_workers: 2
+    pin_memory: false
+    preprocess: z_score
+    datapath: "../datasets/deep-raman-dataset/"
+    augment: false
+    evaluation:
+      mix_file: "../datasets/deep-raman-dataset/unknown_Liquid_and_powder_mixture.npy"
+      pure_file: "../datasets/deep-raman-dataset/database_for_Liquid_and_powder_mixture.npy"
+      # labels_file: "../datasets/deep-raman-dataset/labels.npy"   # or .json / .csv
+      dbcoms_file: "../datasets/deep-raman-dataset/database_for_Liquid_and_powder_mixture.csv"
+      threshold: 0.5
+      eps_for_ratio: 1e-9
+      labels:  # inline labels matrix
+        - [1, 1, 1, 0, 0, 0]
+        - [1, 1, 1, 0, 0, 0]
+        - [1, 1, 1, 0, 0, 0]
+        - [0, 0, 0, 1, 1, 0]
+        - [0, 0, 0, 1, 1, 1]
+        - [0, 0, 0, 1, 1, 1]
+    # evaluation:
+    #   mix_file_only: "../datasets/deep-raman-dataset/Multi_component_mixture_Dataset.npy"
+    #   pure_from_mix_first_n: 13  # number of pure spectra at start
+    #   dbcoms_list:
+    #     - Methylbenzene
+    #     - Diethylene glycol dimethyl ether
+    #     - n-Nonane
+    #     - Dichloromethane
+    #     - n-heptanol
+    #     - Cyclohexane
+    #     - Dichloroethane
+    #     - Acetonitrile
+    #     - 1-Butanol
+    #     - Dipropylmethane
+    #     - iso-Propyl alcohol
+    #     - Ethanol
+    #     - Methanol
+    #   labels:  # inline labels matrix
+    #     - [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+    #     - [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    #     - [0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0]
+    #     - [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+    #     - [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0]
+    #     - [0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]
+    #     - [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+    #     - [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1]
+    #     - [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+    #     - [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0]
+    #     - [0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]
+    #     - [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+    #     - [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+    #     - [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1]
+    #     - [0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
+    #     - [1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]
+    #     - [0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]
+    #     - [0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0]
+    #     - [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1]
+    #     - [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0]
+    #     - [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0]
+    #     - [0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]
+    #     - [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0]
+    #     - [0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
+    #     - [0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]
+    #     - [1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]
+    #     - [0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0]
+    #     - [0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0]
+    #     - [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0]
+    #     - [0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0]
+    #     - [0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1]
+    #     - [0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1]
+    #     - [0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0]
+    #     - [1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0]
+    #     - [0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0]
+    #     - [0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0]
+    #     - [0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0]
+    #     - [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1]
+    #     - [0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1]
+    #     - [0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1]
+    #     - [0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1]
+    #     - [0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1]
+    #     - [0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0]
+    #     - [0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1]
+    #     - [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1]
+    #     - [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0]
+    #     - [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1]
+    #     - [0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]
+    #     - [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1]
+    #     - [0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1]
+    #     - [0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1]
+    #     - [0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1]
+    #     - [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1]
+    #     - [1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1]
+    #     - [1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1]
+    #     - [1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1]
+    #     - [0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0]
+    #     - [0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0]
+    #     - [0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+    #     - [0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1]
+    #     - [0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1]
+    #     - [1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1]
+    #     - [0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0]
+    #     - [1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1]
+    #     - [0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1]
+    #     - [0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0]
+    #     - [1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0]
+    #     - [0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1]
+    #     - [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+    #     - [0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+    #     - [0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1]
+    #     - [1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1]
+    #     - [1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1]
+    #     - [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1]
+    #     - [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+    #     - [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1]
+    #     - [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1]
+    #     - [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1]
+    #     - [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1]
+    #     - [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1]
+    #     - [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    #     - [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
+    #     - [1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1]
+    #     - [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+    #     - [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1]
+    #     - [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    #     - [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    #   threshold: 0.5
+    #   eps_for_ratio: 1e-9
+ckpt_path: null
