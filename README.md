@@ -294,6 +294,40 @@ TRAIN/adenine-logs-probe/seed_17/version_0/
 
 Use the checkpoint selected by validation loss for model selection, or `last.ckpt` to evaluate the final training state. Record the chosen checkpoint, configuration, seed, data splits, and normalization statistics when comparing results.
 
+## Pretrained Model Weights
+
+The pretrained model checkpoints used in this work are publicly available
+on Hugging Face:
+
+🤗 **[Download Pretrained Weights](https://huggingface.co/cdavalas/md-raman-ssl)**
+
+These checkpoints can be used to reproduce the experiments presented in
+the paper or to initialize models for downstream Raman spectroscopy tasks.
+
+## Citation
+
+If you find this work useful or use the code, pretrained models, or
+methodology in your research, please cite our paper:
+
+**Physics-Aware Self-Supervised Pretraining on Multi-Domain Raman Spectra**
+
+Charalampos Davalas, Georgios Levantinos, Anastasios Dimitriou,
+Nikolaos Papanikolaou, Georgios Th. Papadopoulos, and Dimitrios Michail.
+
+[arXiv:2610.23955](https://arxiv.org/abs/2610.23955)
+
+```bibtex
+@misc{davalas2026physicsawareselfsupervisedpretrainingmultidomain,
+      title={Physics-Aware Self-Supervised Pretraining on Multi-Domain Raman Spectra},
+      author={Charalampos Davalas and Georgios Levantinos and Anastasios Dimitriou and Nikolaos Papanikolaou and Georgios Th. Papadopoulos and Dimitrios Michail},
+      year={2026},
+      eprint={2610.23955},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2610.23955},
+}
+```
+
 ## License
 
 The code is distributed under the MIT license. See [LICENSE](LICENSE), which also includes the retained third-party notices for code adapted from vit-pytorch and DeepRaman. Separate copies of their licenses are in [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES/). Dependencies installed separately retain their own licenses. Dataset licenses and access conditions are separate from the code license.
